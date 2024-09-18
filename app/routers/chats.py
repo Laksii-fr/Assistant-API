@@ -1,36 +1,34 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,UploadFile,Depends,Form,File
 import app.controllers.chats as controller
 import app.models.model_types as model_type
-import app.models.response_model as response_model
-
+from app.controllers.cognito import get_current_user
+from typing import *
 router = APIRouter()
 
 
 @router.post("/create-chat")
-async def create_chat(chat: list[model_type.AssistantChat]):
-        created_response = await controller.create_new_chat(chat)
+async def create_chat(
+    astId: str = Form(...),
+    threadId: str = Form(...),
+    message: str = Form(...),
+    user: dict = Depends(get_current_user),
+    image: List[UploadFile] = File(None),
+    files: List[UploadFile] = File(None)
+):
+    userId = user.get('login_id')
+    # Create an instance of AssistantChat
+    chat_instance = model_type.AssistantChat(
+        userId=userId,
+        astId=astId,
+        threadId=threadId,
+        message=message
+    )
+    content = await controller.process_chat_content([chat_instance], image)
+    created_response = await controller.create_new_chat([chat_instance], content, files)
+    response = {
+        "status": True,
+        "message": "Chat created successfully",
+        "data": created_response
+    }
 
-        response = response_model.ApiResponse()
-        response.message = "Chat created successfully"
-        response.status = True
-        response.data = created_response
-
-        return response
-
-
-# @router.get("/get-chat")
-# async def get_all_chat():
-#         chat_files = await controller.get_all_assistants()
-#         return {"message": "Blogs fetched successfully", "data": chat_files}
-#
-#
-# @router.put("/update-chat")
-# async def update_chat():
-#         chat_files = await controller.get_all_assistants()
-#         return {"message": "Blogs fetched successfully", "data": chat_files}
-#
-#
-# @router.delete("/remove-chat")
-# async def remove_chat():
-#         chat_files = await controller.get_all_assistants()
-#         return {"message": "Blogs fetched successfully", "data": chat_files}
+    return response

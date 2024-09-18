@@ -8,7 +8,7 @@ from app.config import settings
 from app.routers import assistant
 from app.routers import threads
 from app.routers import chats
-
+from app.routers import auth
 app = FastAPI()
 
 origins = [settings.CLIENT_ORIGIN]
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(auth.router, tags=["Authentication"], prefix="/api/auth")
 app.include_router(assistant.router, tags=["Assistant"], prefix="/api/assistant")
 app.include_router(threads.router, tags=["Threads"], prefix="/api/threads")
 app.include_router(chats.router, tags=["Chats"], prefix="/api/chats")

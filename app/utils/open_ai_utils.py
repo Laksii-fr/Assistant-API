@@ -64,38 +64,46 @@ async def create_assistant_with_file(
     payload: model_type.Assistant, files: list[UploadFile]
 ):
     assistant_tools = []
-
+    print("1.1")
     try:
         for aiTool in payload.astTools:
             tool = {"type": aiTool}
             assistant_tools.append(tool)
+        print("1.2")
 
         client = OpenAI()
-
-        files_list = await ai_helper.create_files(files)
-
+        vector_store = client.beta.vector_stores.create(
+        name = payload.astName
+    )
+        print("1.3")
+        vector_store_id = vector_store.id
+        print("1.4")
+        files_list = await ai_helper.create_files(files,vector_store_id)
+        print("1.5")
         file_ids: list = []
         for element in files_list:
             file_id = element["fileId"]
             file_ids.append(file_id)
-
+        print("1.6")
+        tool_resources_set = {
+                "file_search": {
+                    "vector_store_ids": [vector_store_id]
+                }
+            }
+        print("1.7")
         assistant = client.beta.assistants.create(
             name=payload.astName,
             instructions=payload.astInstruction,
             model=payload.gptModel,
             tools=assistant_tools,
-            file_ids=file_ids,
+            tool_resources=tool_resources_set,
         )
-
+        print("1.8")
         response = {"files": files_list, "assistant": assistant}
         return response
 
     except Exception as e:
-        print(e)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"{e.args}",
-        )
+        return f"There was an error creating the Assistant{e}"
 
 
 async def get_assistant_by_id(ast_id: str):
@@ -160,3 +168,22 @@ async def create_assistant_chat(chat: model_type.AssistantChat):
     response = await ai_helper.get_response(chat.threadId)
     prettified_response = ai_helper.prettify_single_response(response)
     return prettified_response
+
+async def upload_image_to_openai(image: UploadFile,client):
+    try:
+        client = OpenAI()
+
+        # Read the file's content as bytes
+        file_content = await image.read()
+
+        # Upload the file content to OpenAI
+        response = client.files.create(
+            file=(image.filename, file_content),
+            purpose='vision'
+        )
+
+        file_id = response.id
+        return file_id
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image to OpenAI: {e}")

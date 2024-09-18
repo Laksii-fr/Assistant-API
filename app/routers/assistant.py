@@ -1,77 +1,117 @@
 from fastapi import APIRouter, UploadFile, Depends, File
 import app.controllers.assistant as controller
 import app.models.model_types as model_type
-import app.models.response_model as response_model
-
+from app.controllers.cognito import get_current_user
 router = APIRouter()
 
-
 @router.post("/create-assistant")
-async def create_assistant(assistant: model_type.Assistant):
-    response = await controller.create_new_assistant(assistant)
-    return {"message": f"Assistant created successfully", "Assistant": f"{response}"}
-
+async def create_assistant(assistant: model_type.Assistant,
+                           user: dict = Depends(get_current_user)):
+    try:
+        assistant.userId = user.get('login_id')
+        response = await controller.create_new_assistant(assistant)
+        return {
+            "status": True,
+            "message": "Assistant created successfully",
+            "data": response
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }
 
 @router.post("/create-assistant-with-file")
 async def create_assistant_with_file(
     files: list[UploadFile],
     assistant: model_type.Assistant = Depends(),
-) -> response_model.ApiResponse:
-    new_assistant = await controller.create_new_assistant_with_file(assistant, files)
-    response = response_model.ApiResponse()
-    response.message = "Assistant created successfully"
-    response.status = True
-    response.data = new_assistant
-    return response
-
+    user: dict = Depends(get_current_user)
+):
+    try: 
+        assistant.userId = user.get('login_id')
+        new_assistant = await controller.create_new_assistant_with_file(assistant, files)
+        return {
+            "status": True,
+            "message": "Assistant created successfully",
+            "data": new_assistant,
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }
 
 @router.post("/upload-assistant-files/{ast_id}")
 async def upload_assistant_files(
     ast_id: str,
     files: list[UploadFile],
-) -> response_model.ApiResponse:
-    uploaded_files = await controller.upload_assistant_files(ast_id, files)
-    response = response_model.ApiResponse()
-    response.message = "Files uploaded successfully"
-    response.status = True
-    response.data = uploaded_files
-    return response
-
+    user: dict = Depends(get_current_user)
+):
+    try:
+        uploaded_files = await controller.upload_assistant_files(ast_id, files)
+        return {
+            "status": True,
+            "message": "Files uploaded successfully",
+            "data": uploaded_files
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }
 
 @router.get("/get-assistant")
-async def get_all_assistant() -> response_model.ApiResponse:
-    chat_files = await controller.get_all_assistants()
-
-    response = response_model.ApiResponse()
-    response.message = "Assistant fetched successfully"
-    response.status = True
-    response.data = chat_files
-    return response
-
+async def get_all_assistant(user: dict = Depends(get_current_user)):
+    try:
+        chat_files = await controller.get_all_assistants()
+        return {
+            "status": True,
+            "message": "Assistants fetched successfully",
+            "data": chat_files
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }
 
 @router.get("/get-assistant/{ast_id}")
-async def get_all_assistant_by_id(ast_id: str) -> response_model.ApiResponse:
-    assistant = await controller.get_assistant_by_id(ast_id)
-    response = response_model.ApiResponse()
-    response.message = "Assistant fetched successfully"
-    response.status = True
-    response.data = assistant
-    return response
-
+async def get_all_assistant_by_id(ast_id: str,
+                                  user: dict = Depends(get_current_user)):
+    try:
+        assistant = await controller.get_assistant_by_id(ast_id)
+        return {
+            "status": True,
+            "message": "Assistant fetched successfully",
+            "data": assistant
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }
 
 @router.put("/update-assistant")
 async def update_assistant_with_file(
     assistant: model_type.UpdateAssistant,
-) -> response_model.ApiResponse:
-    updated_assistant = await controller.update_assistant(assistant)
-    response = response_model.ApiResponse()
-    response.message = "Assistant updated successfully"
-    response.status = True
-    response.data = updated_assistant
-    return response
-
-
-# @router.delete("/remove-assistant")
-# async def remove_assistant():
-#     chat_files = await controller.get_all_assistants()
-#     return {"message": "Blogs fetched successfully", "data": chat_files}
+    user: dict = Depends(get_current_user)
+):
+    try:
+        assistant.userId = user.get('login_id')
+        updated_assistant = await controller.update_assistant(assistant)
+        return {
+            "status": True,
+            "message": "Assistant updated successfully",
+            "data": updated_assistant
+        }
+    except Exception as e:
+        return {
+            "status": False,
+            "message": f"An error occurred: {e}",
+            "data": None
+        }

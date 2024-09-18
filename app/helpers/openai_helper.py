@@ -4,7 +4,7 @@ from fastapi import UploadFile
 from openai import OpenAI
 import time
 import datetime
-
+import io
 
 def wait_on_run(run, thread_id):
         client = OpenAI()
@@ -84,22 +84,50 @@ def prettify_single_response(response):
         return assistant_response
 
 
-async def create_file(file: UploadFile):
+import io
+from fastapi import UploadFile
+from openai import OpenAI
 
-        client = OpenAI()
-        contents = await file.read()
-        created_file = client.files.create(file=contents, purpose="assistants")
+async def create_file(file: UploadFile, vector_storeId):
+    print('1.4.1')
+    client = OpenAI()
+    
+    # Read the file contents
+    contents = await file.read()
+    
+    # Create a BytesIO object and set its name attribute to include the filename with extension
+    file_like = io.BytesIO(contents)
+    file_like.name = file.filename  # Add this to ensure the file has its original name
+    
+    print('1.4.2')
+    created_file = client.files.create(file=file_like, purpose="assistants")
+    
+    print('1.4.3')
+    fileId = created_file.id
+    
+    # Associate the file with the vector store
+    vector_store_file = client.beta.vector_stores.files.create(
+        vector_store_id=vector_storeId,
+        file_id=fileId
+    )
+    
+    print('1.4.4')
+    
+    # Create a file object with metadata
+    file_object = {
+        "fileId": created_file.id,
+        "fileName": file.filename,
+        "fileSize": file.size,
+        "fileType": file.content_type,
+    }
+    
+    print('1.4.5')
+    return file_object
 
-        file_object = {
-                "fileId": created_file.id,
-                "fileName": file.filename,
-                "fileSize": file.size,
-                "fileType": file.content_type,
-        }
-        return file_object
 
 
-async def create_files(files: [UploadFile]):
-        async_files = [create_file(file) for file in files]
+async def create_files(files: [UploadFile],vector_storeId):
+        print('1.4.1')
+        async_files = [create_file(file,vector_storeId) for file in files]
         files = await asyncio.gather(*async_files)
         return files

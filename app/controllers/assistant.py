@@ -13,6 +13,7 @@ async def create_new_assistant(assistant: model_type.Assistant):
 async def create_new_assistant_with_file(
     payload: model_type.Assistant, files: list[UploadFile]
 ):
+    print("1")
     created_assistant = await ai_utils.create_assistant_with_file(payload, files)
     mongo_utils.save_created_assistant_with_file(payload, created_assistant)
     return {"assistant": created_assistant}
