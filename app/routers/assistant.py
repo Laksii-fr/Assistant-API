@@ -8,8 +8,8 @@ router = APIRouter()
 async def create_assistant(assistant: model_type.Assistant,
                            user: dict = Depends(get_current_user)):
     try:
-        assistant.userId = user.get('login_id')
-        response = await controller.create_new_assistant(assistant)
+        userId = user.get('login_id')
+        response = await controller.create_new_assistant(userId,assistant)
         return {
             "status": True,
             "message": "Assistant created successfully",
@@ -29,8 +29,8 @@ async def create_assistant_with_file(
     user: dict = Depends(get_current_user)
 ):
     try: 
-        assistant.userId = user.get('login_id')
-        new_assistant = await controller.create_new_assistant_with_file(assistant, files)
+        userId = user.get('login_id')
+        new_assistant = await controller.create_new_assistant_with_file(userId,assistant, files)
         return {
             "status": True,
             "message": "Assistant created successfully",
@@ -66,7 +66,8 @@ async def upload_assistant_files(
 @router.get("/get-assistant")
 async def get_all_assistant(user: dict = Depends(get_current_user)):
     try:
-        chat_files = await controller.get_all_assistants()
+        userId = user.get('login_id')
+        chat_files = await controller.get_all_assistants(userId)
         return {
             "status": True,
             "message": "Assistants fetched successfully",
@@ -83,7 +84,8 @@ async def get_all_assistant(user: dict = Depends(get_current_user)):
 async def get_all_assistant_by_id(ast_id: str,
                                   user: dict = Depends(get_current_user)):
     try:
-        assistant = await controller.get_assistant_by_id(ast_id)
+        userId = user.get('login_id')
+        assistant = await controller.get_assistant_by_id(userId,ast_id)
         return {
             "status": True,
             "message": "Assistant fetched successfully",
@@ -102,8 +104,8 @@ async def update_assistant_with_file(
     user: dict = Depends(get_current_user)
 ):
     try:
-        assistant.userId = user.get('login_id')
-        updated_assistant = await controller.update_assistant(assistant)
+        userId = user.get('login_id')
+        updated_assistant = await controller.update_assistant(userId,assistant)
         return {
             "status": True,
             "message": "Assistant updated successfully",

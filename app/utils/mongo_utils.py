@@ -8,9 +8,9 @@ from fastapi import HTTPException, status
 import app.models.model_types as modelType
 
 
-def save_created_assistant(assistant: modelType.Assistant, assistant_id: str):
+def save_created_assistant(userId,assistant: modelType.Assistant, assistant_id: str):
     new_assistant: CreateAssistantBaseSchema = {
-        "userId": assistant.userId,
+        "userId": userId,
         "astId": assistant_id,
         "astName": assistant.astName,
         "astInstruction": assistant.astInstruction,
@@ -30,10 +30,10 @@ def save_created_assistant(assistant: modelType.Assistant, assistant_id: str):
         )
 
 
-def get_assistant_by_id(assistant_id: str):
+def get_assistant_by_id(userId,assistant_id: str):
     try:
         cur = OurAssistant.find(
-            filter={"astId": assistant_id}, projection={"_id": 0}
+            filter={"userId": userId ,"astId": assistant_id}, projection={"_id": 0}
         ).sort([("createdAt", -1)])
         result = []
         for doc in cur:
@@ -47,9 +47,9 @@ def get_assistant_by_id(assistant_id: str):
         )
 
 
-def update_created_assistant(assistant: modelType.UpdateAssistant):
+def update_created_assistant(userId,assistant: modelType.UpdateAssistant):
     new_assistant: CreateAssistantBaseSchema = {
-        "userId": assistant.userId,
+        "userId": userId,
         "astId": assistant.astId,
         "astName": assistant.astName,
         "astInstruction": assistant.astInstruction,
@@ -67,9 +67,9 @@ def update_created_assistant(assistant: modelType.UpdateAssistant):
         )
 
 
-def save_created_assistant_with_file(assistant: modelType.Assistant, assistant_info):
+def save_created_assistant_with_file(userId , assistant: modelType.Assistant, assistant_info):
     new_assistant: CreateAssistantBaseSchema = {
-        "userId": assistant.userId,
+        "userId": userId,
         "astId": assistant_info["assistant"].id,
         "astName": assistant.astName,
         "astInstruction": assistant.astInstruction,
@@ -103,9 +103,9 @@ def update_assistant_files(ast_id: str, assistant_files):
         )
 
 
-def save_created_thread(payload: modelType.AssistantThread, threadId: str):
+def save_created_thread(userId,payload: modelType.AssistantThread, threadId: str):
     new_assistant: CreateAssistantThreadBaseSchema = {
-        "userId": payload.userId,
+        "userId": userId,
         "astId": payload.astId,
         "threadId": threadId,
         "threadTitle": payload.threadTitle,
@@ -122,27 +122,42 @@ def save_created_thread(payload: modelType.AssistantThread, threadId: str):
         )
 
 
-def fetch_all_assistants():
+def fetch_all_assistants(user_id: str):
     try:
-        cur = OurAssistant.find(filter={}, projection={"_id": 0}).sort(
-            [("createdAt", -1)]
-        )
-        result = []
-        for doc in cur:
-            result.append(doc)
+
+        cur = OurAssistant.find(
+            filter={"userId": user_id}, 
+            projection={
+                "_id": 0, 
+                "astId": 1, 
+                "astName": 1, 
+                "astInstruction": 1, 
+                "gptModel": 1, 
+                "astTools": 1, 
+                "astTopP": 1,
+                "funcDesc": 1, 
+                "createdAt": 1, 
+                "updatedAt": 1
+            }
+        ).sort([("createdAt", -1)])
+
+        # Convert cursor to list
+        result = [doc for doc in cur]
+
         return result
+    
     except Exception as e:
-        print(f"Error {e}")
+        print(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Something went wrong during fetching assistant.",
+            detail=f"Something went wrong during fetching assistants.{e}",
         )
 
 
-def fetch_threads_by_assistant_id(assistant_id: str):
+def fetch_threads_by_assistant_id(userId,assistant_id: str):
     try:
         cur = AssistantThreads.find(
-            filter={"astId": assistant_id}, projection={"_id": 0}
+            filter={"userId": userId,"astId": assistant_id}, projection={"_id": 0}
         ).sort([("createdAt", -1)])
         result = []
         for doc in cur:

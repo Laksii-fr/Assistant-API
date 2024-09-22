@@ -29,7 +29,6 @@ class LoginRequest(BaseModel):
 
 
 class Assistant(BaseModel):
-    userId: str
     astName: str
     astInstruction: str
     gptModel: str
@@ -37,7 +36,6 @@ class Assistant(BaseModel):
 
 
 class UpdateAssistant(BaseModel):
-    userId: str
     astId: str
     astName: str
     astInstruction: str
@@ -46,7 +44,6 @@ class UpdateAssistant(BaseModel):
 
 
 class AssistantWithFile(BaseModel):
-    userId: str
     astName: str
     astInstruction: str
     gptModel: str
@@ -55,13 +52,11 @@ class AssistantWithFile(BaseModel):
 
 
 class AssistantThread(BaseModel):
-    userId: str
     astId: str
     threadTitle: str
 
 
 class AssistantChat(BaseModel):
-    userId: str
     astId: str
     threadId: str
     message: str

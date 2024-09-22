@@ -11,8 +11,8 @@ router = APIRouter()
 async def create_thread(thread: model_type.AssistantThread,
     user: dict = Depends(get_current_user)):
     try:
-        thread.userId = user.get('login_id')
-        created_thread = await controller.create_new_thread(thread)
+        userId = user.get('login_id')
+        created_thread = await controller.create_new_thread(userId,thread)
         response = {
             "status": True,
             "message": "Thread created successfully",
@@ -30,7 +30,8 @@ async def create_thread(thread: model_type.AssistantThread,
 async def get_all_thread(assistant_id: str,
     user: dict = Depends(get_current_user)):
     try:
-        thread_history = await controller.get_all_threads(assistant_id)
+        userId = user.get('login_id')
+        thread_history = await controller.get_all_threads(userId,assistant_id)
         response = {
             "status": True,
             "message": "Thread fetched successfully",
