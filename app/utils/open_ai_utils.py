@@ -162,8 +162,8 @@ async def get_all_thread_history(thread_id: str):
     return prettified_response
 
 
-async def create_assistant_chat(chat: model_type.AssistantChat):
-    run = ai_helper.create_run(chat.astId, chat.threadId, chat.message)
+async def create_assistant_chat(chat: model_type.AssistantChat, message):
+    run = ai_helper.create_run(chat,message)
     run = ai_helper.wait_on_run(run, chat.threadId)
     response = await ai_helper.get_response(chat.threadId)
     prettified_response = ai_helper.prettify_single_response(response)

@@ -13,7 +13,6 @@ async def create_chat(
     message: str = Form(...),
     user: dict = Depends(get_current_user),
     image: List[UploadFile] = File(None),
-    files: List[UploadFile] = File(None)
 ):
     userId = user.get('login_id')
     # Create an instance of AssistantChat
@@ -24,7 +23,7 @@ async def create_chat(
         message=message
     )
     content = await controller.process_chat_content([chat_instance], image)
-    created_response = await controller.create_new_chat([chat_instance], content, files)
+    created_response = await controller.create_new_chat([chat_instance], content)
     response = {
         "status": True,
         "message": "Chat created successfully",

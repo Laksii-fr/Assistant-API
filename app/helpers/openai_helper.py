@@ -1,5 +1,5 @@
 import asyncio
-
+import app.models.model_types as modelType
 from fastapi import UploadFile
 from openai import OpenAI
 import time
@@ -17,23 +17,23 @@ def wait_on_run(run, thread_id):
         return run
 
 
-def submit_message(assistant_id, thread_id, user_message):
+def submit_message(chat : modelType.AssistantChat, user_message):
         client = OpenAI()
         client.beta.threads.messages.create(
-                thread_id=thread_id,
+                thread_id= chat.threadId,
                 role="user",
                 content=user_message,
 
         )
         return client.beta.threads.runs.create(
-                thread_id=thread_id,
-                assistant_id=assistant_id,
+                thread_id=chat.threadId,
+                assistant_id=chat.astId,
         )
 
-
-def create_run(assistant_id: str, thread_id: str, user_input: str):
-        run = submit_message(assistant_id, thread_id, user_input)
+def create_run(chat : modelType.AssistantChat, user_message):
+        run = submit_message(chat, user_message)
         return run
+
 
 
 async def get_response(thread_id: str):
