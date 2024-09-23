@@ -22,3 +22,9 @@ class CreateAssistantThreadBaseSchema(BaseModel):
     threadTitle: str
     createdAt: datetime | None = None
     updatedAt: datetime | None = None
+
+class CreateUserProfiles(BaseModel):
+    UserID : str
+    UserName : str
+    UserMail : str
+    OpenAPIkey : str

@@ -8,3 +8,5 @@ db = client[settings.MONGO_INITDB_DATABASE]
 
 OurAssistant = db.Assistant
 AssistantThreads = db.AssistantThreads
+UsersCollection = db.users_collection
+UserProfiles = db.UserProfiles

@@ -67,3 +67,8 @@ class AssistantFile(BaseModel):
     fileName: str
     fileSize: str
     fileType: str
+
+class UserProfile(BaseModel):
+    User_name : str
+    User_email : str
+    OpenAPI_key : Optional[str] = None
